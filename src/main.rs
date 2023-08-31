@@ -103,9 +103,8 @@ fn main() {
     match args.algorithm {
         Algorithm::Xx128 => {
             let mut pos: u64 = 0;
-            let mut buffer = vec![0u8; args.size as usize];
             while pos <= size {
-                buffer.clear();
+                let mut buffer = vec![0u8; args.size as usize];
                 let _ = match reader.seek(SeekFrom::Start(pos)) {
                     Ok(result) => result,
                     Err(e) => {
@@ -113,8 +112,15 @@ fn main() {
                         return;
                     }
                 };
+                if args.print {
+                    print!("Reading from {}-{},", pos, buffer.len());
+                }
                 match reader.read(buffer.as_mut_slice()) {
-                    Ok(_) => {
+                    Ok(readsize) => {
+                        if args.print {
+                            // println!("Content {:#?} [read: {}]", buffer.as_slice().clone(), readsize);
+                            println!("[read: {}]", readsize);
+                        }
                         if !secret.is_empty() {
                             let r = xxh3_128_with_secret(buffer.as_slice(), secret.as_bytes());
                             if args.print {
@@ -142,9 +148,8 @@ fn main() {
         },
         Algorithm::Xx64 => {
             let mut pos: u64 = 0;
-            let mut buffer = vec![0u8; args.size as usize];
             while pos <= size {
-                buffer.clear();
+                let mut buffer = vec![0u8; args.size as usize];
                 let _ = match reader.seek(SeekFrom::Start(pos)) {
                     Ok(result) => result,
                     Err(e) => {
@@ -152,8 +157,15 @@ fn main() {
                         return;
                     }
                 };
+                if args.print {
+                    print!("Reading from {}-{},", pos, buffer.len());
+                }
                 match reader.read(buffer.as_mut_slice()) {
-                    Ok(_) => {
+                    Ok(readsize) => {
+                        if args.print {
+                            // println!("Content {:#?} [read: {}]", buffer.as_slice().clone(), readsize);
+                            println!("[read: {}]", readsize);
+                        }
                         if !secret.is_empty() {
                             let r = xxh3_64_with_secret(buffer.as_slice(), secret.as_bytes());
                             if args.print {
@@ -181,9 +193,8 @@ fn main() {
         },
         Algorithm::Xx32 => {
             let mut pos: u64 = 0;
-            let mut buffer = vec![0u8; args.size as usize];
             while pos <= size {
-                buffer.clear();
+                let mut buffer = vec![0u8; args.size as usize];
                 let _ = match reader.seek(SeekFrom::Start(pos)) {
                     Ok(result) => result,
                     Err(e) => {
@@ -191,8 +202,15 @@ fn main() {
                         return;
                     }
                 };
+                if args.print {
+                    print!("Reading from {}-{},", pos, buffer.len());
+                }
                 match reader.read(buffer.as_mut_slice()) {
-                    Ok(_) => {
+                    Ok(readsize) => {
+                        if args.print {
+                            // println!("Content {:#?} [read: {}]", buffer.as_slice().clone(), readsize);
+                            println!("[read: {}]", readsize);
+                        }
                         let r = xxh32(buffer.as_slice(), (default_seed as u64).try_into().unwrap());
                         if args.print {
                             println!("{} - {}: {}", pos, pos + args.size, r);
