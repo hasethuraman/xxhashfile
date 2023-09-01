@@ -50,9 +50,7 @@ fn main() {
         }
     };
     let path_os_string = path_canonicalized.as_os_str();
-    if args.print {
-        println!("Hash on file : {:#?}", path_os_string);
-    }
+    println!("Hash on file : {:#?}", path_os_string);
     let f = match File::open(path_os_string) {
         Ok(result) => result,
         Err(e) => {
@@ -68,9 +66,7 @@ fn main() {
             return;
         }
     };
-    if args.print {
-        println!("File size : {}", size);
-    }
+    println!("File size : {}bytes", size);
 
     let mut default_seed: u64 = 345456657563;
 
@@ -93,13 +89,13 @@ fn main() {
         };
     }
 
-    if args.print {
-        println!("Defalt seed : {}", default_seed);
-        println!("Input seed : {}", seed);
-        println!("Input Secret : {}", args.secret);
-        println!("Calculated Secret : {}", secret);
-    }
+    println!("Defalt seed : {}", default_seed);
+    println!("Input seed : {}", seed);
+    println!("Input Secret : {}", args.secret);
+    println!("Calculated Secret : {}", secret);
+    println!("Read buffer size : {}", args.size);
 
+    let mut total_bytes_read: u64 = 0;
     match args.algorithm {
         Algorithm::Xx128 => {
             let mut pos: u64 = 0;
@@ -113,29 +109,29 @@ fn main() {
                     }
                 };
                 if args.print {
-                    print!("Reading from {}-{},", pos, buffer.len());
+                    print!("Reading from offset {} of {} bytes,", pos, buffer.len());
                 }
                 match reader.read(buffer.as_mut_slice()) {
                     Ok(readsize) => {
                         if args.print {
                             // println!("Content {:#?} [read: {}]", buffer.as_slice().clone(), readsize);
-                            println!("[read: {}]", readsize);
+                            println!(". Recieved {} bytes", readsize);
                         }
+                        if readsize == 0 {
+                            println!(". Recieved only 0 bytes. Total bytes read: {} Returning", total_bytes_read);
+                            return;
+                        }
+                        total_bytes_read = total_bytes_read + (readsize as u64);
+                        let r: u128;
                         if !secret.is_empty() {
-                            let r = xxh3_128_with_secret(buffer.as_slice(), secret.as_bytes());
-                            if args.print {
-                                println!("{} - {}: {}", pos, pos + args.size, r);
-                            }
+                            r = xxh3_128_with_secret(buffer.as_slice(), secret.as_bytes());                           
                         } else if seed != 0 {
-                            let r = xxh3_128_with_seed(buffer.as_slice(), seed);
-                            if args.print {
-                                println!("{} - {}: {}", pos, pos + args.size, r);
-                            }
+                            r = xxh3_128_with_seed(buffer.as_slice(), seed);
                         } else {
-                            let r = xxh3_128(buffer.as_slice());
-                            if args.print {
-                                println!("{} - {}: {}", pos, pos + args.size, r);
-                            }
+                            r = xxh3_128(buffer.as_slice());
+                        }
+                        if args.print {
+                            println!("Hash for bytes from {} - {}: hash-length: {}", pos, pos + args.size, r);
                         }
                         pos = pos + args.size;
                     },
@@ -158,29 +154,29 @@ fn main() {
                     }
                 };
                 if args.print {
-                    print!("Reading from {}-{},", pos, buffer.len());
+                    print!("Reading from offset {} of {} bytes,", pos, buffer.len());
                 }
                 match reader.read(buffer.as_mut_slice()) {
                     Ok(readsize) => {
                         if args.print {
                             // println!("Content {:#?} [read: {}]", buffer.as_slice().clone(), readsize);
-                            println!("[read: {}]", readsize);
+                            println!(". Recieved {} bytes", readsize);
                         }
+                        if readsize == 0 {
+                            println!(". Recieved only 0 bytes. Total bytes read: {} Returning", total_bytes_read);
+                            return;
+                        }
+                        total_bytes_read = total_bytes_read + (readsize as u64);
+                        let r: u64;
                         if !secret.is_empty() {
-                            let r = xxh3_64_with_secret(buffer.as_slice(), secret.as_bytes());
-                            if args.print {
-                                println!("{} - {}: {}", pos, pos + args.size, r);
-                            }
+                            r = xxh3_64_with_secret(buffer.as_slice(), secret.as_bytes());
                         } else if seed != 0 {
-                            let r = xxh3_64_with_seed(buffer.as_slice(), seed);
-                            if args.print {
-                                println!("{} - {}: {}", pos, pos + args.size, r);
-                            }
+                            r = xxh3_64_with_seed(buffer.as_slice(), seed);
                         } else {
-                            let r = xxh3_64(buffer.as_slice());
-                            if args.print {
-                                println!("{} - {}: {}", pos, pos + args.size, r);
-                            }
+                            r = xxh3_64(buffer.as_slice());
+                        }
+                        if args.print {
+                            println!("Hash for bytes from {} - {}: hash-length: {}", pos, pos + args.size, r);
                         }
                         pos = pos + args.size
                     },
@@ -203,17 +199,22 @@ fn main() {
                     }
                 };
                 if args.print {
-                    print!("Reading from {}-{},", pos, buffer.len());
+                    print!("Reading from offset {} of {} bytes,", pos, buffer.len());
                 }
                 match reader.read(buffer.as_mut_slice()) {
                     Ok(readsize) => {
                         if args.print {
                             // println!("Content {:#?} [read: {}]", buffer.as_slice().clone(), readsize);
-                            println!("[read: {}]", readsize);
+                            println!(". Recieved {} bytes", readsize);
                         }
+                        if readsize == 0 {
+                            println!(". Recieved only 0 bytes. Total bytes read: {} Returning", total_bytes_read);
+                            return;
+                        }
+                        total_bytes_read = total_bytes_read + (readsize as u64);
                         let r = xxh32(buffer.as_slice(), (default_seed as u64).try_into().unwrap());
                         if args.print {
-                            println!("{} - {}: {}", pos, pos + args.size, r);
+                            println!("Hash for bytes from {} - {}: hash-length: {}", pos, pos + args.size, r);
                         }
                         pos = pos + args.size
                     },
